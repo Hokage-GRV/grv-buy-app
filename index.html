@@ -61,7 +61,7 @@
   </div>
 
   <script>
-    window.onload = () => {
+    window.onload = async () => {
       const contratoAddress = "0x19776a497a8D56E70629e6082702b6A093F666Af";
       const abi = [
         "function currentLot() view returns (uint256)",
@@ -73,6 +73,32 @@
 
       const provider = new ethers.providers.JsonRpcProvider("https://mainnet.optimism.io");
       const contrato = new ethers.Contract(contratoAddress, abi, provider);
+
+      try {
+        // Lote atual
+        const lote = await contrato.currentLot();
+        document.getElementById('loteAtual').textContent = lote.toString();
+
+        // Estimativa de compra para 1 token
+        const [ok, estimadoWei] = await contrato.estimateBuy("1");
+        if (ok) {
+          const estimadoEth = parseFloat(ethers.utils.formatEther(estimadoWei)).toFixed(6);
+          document.getElementById('precoEth').textContent = estimadoEth;
+
+          // Consulta ao Chainlink ETH/USD
+          const priceFeedAddress = await contrato.priceFeed();
+          const aggregatorV3InterfaceABI = [
+            "function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)"
+          ];
+          const priceFeed = new ethers.Contract(priceFeedAddress, aggregatorV3InterfaceABI, provider);
+          const [, answer] = await priceFeed.latestRoundData();
+          const ethUsd = Number(answer) / 1e8;
+          const precoUSD = (parseFloat(estimadoEth) * ethUsd).toFixed(4);
+          document.getElementById('precoToken').textContent = precoUSD;
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados iniciais:", err);
+      }
 
       window.estimarCompra = async function () {
         const qtd = document.getElementById('tokenAmount').value;
