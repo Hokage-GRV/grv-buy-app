@@ -26,18 +26,39 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
+    .info-boxes {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .info-box {
+      width: 32%;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .main-inputs {
+      margin-top: 1.5rem;
+    }
   </style>
 </head>
 <body>
   <h1>Compre GRV</h1>
-  <div class="info-line">Lote Atual: <span id="loteAtual">-</span></div>
-  <div class="info-line">Valor por Token (USD): <span id="precoToken">-</span></div>
-  <div class="info-line">ETH/USD: <span id="ethUsd">-</span></div>
 
-  <input type="number" id="tokenAmount" placeholder="Quantidade de tokens desejados">
-  <input type="text" id="ethValue" placeholder="ETH necessário (estimado)" disabled>
-  <button onclick="estimarCompra()">Estimar Compra</button>
-  <button onclick="comprar()">Buy Now</button>
+  <div class="info-boxes">
+    <div class="info-box">Lote Atual<br><span id="loteAtual">-</span></div>
+    <div class="info-box">Preço Token (USD)<br><span id="precoToken">-</span></div>
+    <div class="info-box">Preço Token (ETH)<br><span id="precoEth">-</span></div>
+  </div>
+
+  <div class="main-inputs">
+    <input type="number" id="tokenAmount" placeholder="Quantidade de tokens desejados">
+    <input type="text" id="ethValue" placeholder="ETH necessário (estimado)" disabled>
+    <button onclick="estimarCompra()">Estimar Compra</button>
+    <button onclick="comprar()">Buy Now</button>
+  </div>
 
   <script>
     window.onload = () => {
@@ -80,10 +101,7 @@
           return;
         }
         try {
-          const accounts = await ethereum.request({ method: 'eth_accounts' });
-          if (!accounts || accounts.length === 0) {
-            await ethereum.request({ method: 'eth_requestAccounts' });
-          }
+          await ethereum.request({ method: 'eth_requestAccounts' });
 
           const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = web3Provider.getSigner();
