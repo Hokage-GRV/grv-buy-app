@@ -36,7 +36,6 @@
 
   <input type="number" id="tokenAmount" placeholder="Quantidade de tokens desejados">
   <input type="text" id="ethValue" placeholder="ETH necessário (estimado)" disabled>
-  <input type="text" id="grvRecebido" placeholder="Tokens GRV que serão recebidos" disabled>
   <button onclick="estimarCompra()">Estimar Compra</button>
   <button onclick="comprar()">Buy Now</button>
 
@@ -65,24 +64,20 @@
         if (!qtd || qtd <= 0) {
           alert("Insira uma quantidade válida de tokens");
           document.getElementById('ethValue').value = "";
-          document.getElementById('grvRecebido').value = "";
           return;
         }
         try {
           const [canExecute, estimadoWei] = await contrato.estimateBuy(qtd);
           if (!canExecute) {
             document.getElementById('ethValue').value = "Indisponível";
-            document.getElementById('grvRecebido').value = "-";
             return;
           }
           const estimadoETH = ethers.utils.formatEther(estimadoWei);
           ultimoEstimadoETH = estimadoETH; // salva como string decimal
           document.getElementById('ethValue').value = parseFloat(estimadoETH).toFixed(6);
-          document.getElementById('grvRecebido').value = `${qtd} GRV`;
         } catch (err) {
           console.error("Erro ao estimar compra:", err);
           document.getElementById('ethValue').value = "Erro";
-          document.getElementById('grvRecebido').value = "Erro";
         }
       };
 
@@ -126,10 +121,10 @@
           alert("Erro ao realizar transação. Verifique sua carteira.\n\n" + (err?.message || err));
           document.getElementById('ethValue').value = "";
           document.getElementById('tokenAmount').value = "";
-          document.getElementById('grvRecebido').value = "";
         }
       };
     };
   </script>
 </body>
 </html>
+
