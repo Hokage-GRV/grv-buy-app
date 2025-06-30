@@ -80,13 +80,18 @@
           return;
         }
         try {
+          const qtd = document.getElementById('tokenAmount').value;
+          const ethAmount = document.getElementById('ethValue').value;
+
+          if (!qtd || qtd <= 0 || !ethAmount || ethAmount === "Indisponível" || ethAmount === "Erro" || isNaN(ethAmount) || parseFloat(ethAmount) <= 0) {
+            alert("Preencha os dados corretamente antes de comprar.");
+            return;
+          }
+
           await ethereum.request({ method: 'eth_requestAccounts' });
           const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = web3Provider.getSigner();
           const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
-
-          const qtd = document.getElementById('tokenAmount').value;
-          const ethAmount = document.getElementById('ethValue').value;
 
           const tx = await contratoAssinado.buyTokens(qtd, {
             value: ethers.utils.parseEther(ethAmount)
@@ -95,13 +100,12 @@
           alert('Compra realizada com sucesso!');
         } catch (err) {
           console.error("Erro na compra:", err);
-          alert("Erro ao realizar transação. Verifique sua carteira.");
+          alert("Erro ao realizar transação. Verifique sua carteira.\n\n" + (err?.message || err));
+          document.getElementById('ethValue').value = "";
+          document.getElementById('tokenAmount').value = "";
         }
       };
     };
   </script>
 </body>
 </html>
-
-
-
