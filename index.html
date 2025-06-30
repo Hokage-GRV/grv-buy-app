@@ -44,20 +44,14 @@
       const contratoAddress = "0x19776a497a8D56E70629e6082702b6A093F666Af";
       const abi = [
         "function buyTokens(uint256 tokensDesired) payable",
-        "function estimateBuy(uint256 tokensDesired) view returns (bool, uint256)",
-        "function currentLot() view returns (uint256)",
-        "function tokensRemainingInLot() view returns (uint256)",
-        "function priceFeed() view returns (address)",
-        "event TokensPurchased(address indexed buyer, uint256 amount, uint256 ethPaid)",
-        "function name() view returns (string)",
-        "function symbol() view returns (string)",
-        "function decimals() view returns (uint8)"
+        "function estimateBuy(uint256 tokensDesired) view returns (bool, uint256)"
       ];
 
       const provider = new ethers.providers.JsonRpcProvider("https://mainnet.optimism.io");
       const contrato = new ethers.Contract(contratoAddress, abi, provider);
 
-      let ultimoEstimadoETH = null; // Armazena valor de ETH estimado (string em formato decimal)
+      let ultimoEstimadoETH = null;
+      let isConnected = false;
 
       window.estimarCompra = async function () {
         const qtd = document.getElementById('tokenAmount').value;
@@ -73,7 +67,7 @@
             return;
           }
           const estimadoETH = ethers.utils.formatEther(estimadoWei);
-          ultimoEstimadoETH = estimadoETH; // salva como string decimal
+          ultimoEstimadoETH = estimadoETH;
           document.getElementById('ethValue').value = parseFloat(estimadoETH).toFixed(6);
         } catch (err) {
           console.error("Erro ao estimar compra:", err);
@@ -82,24 +76,20 @@
       };
 
       window.comprar = async function () {
-        if (typeof window.ethereum === 'undefined') {
-          alert('MetaMask não está instalada ou detectada.');
+        if (!isConnected) {
+          alert("Conecte sua carteira primeiro.");
+          return;
+        }
+        const qtd = document.getElementById('tokenAmount').value;
+        if (!qtd || qtd <= 0 || !ultimoEstimadoETH || isNaN(ultimoEstimadoETH) || parseFloat(ultimoEstimadoETH) <= 0) {
+          alert("Preencha os dados corretamente e estime antes de comprar.");
           return;
         }
         try {
-          const qtd = document.getElementById('tokenAmount').value;
-
-          if (!qtd || qtd <= 0 || !ultimoEstimadoETH || isNaN(ultimoEstimadoETH) || parseFloat(ultimoEstimadoETH) <= 0) {
-            alert("Preencha os dados corretamente e estime antes de comprar.");
-            return;
-          }
-
-          await ethereum.request({ method: 'eth_requestAccounts' });
           const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = web3Provider.getSigner();
           const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
 
-          // Aplica 2% de margem sobre o valor estimado (em ETH decimal string)
           const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.02).toFixed(6);
 
           const tx = await contratoAssinado.buyTokens(qtd, {
@@ -108,7 +98,6 @@
           });
 
           await tx.wait();
-
           alert('Compra realizada com sucesso!');
         } catch (err) {
           console.error("Erro na compra:", err);
@@ -117,6 +106,17 @@
           document.getElementById('tokenAmount').value = "";
         }
       };
+
+      // Conexão manual com carteira (equivalente ao Connect to Web3 do Etherscan)
+      ethereum.request({ method: 'eth_requestAccounts' })
+        .then(() => {
+          isConnected = true;
+          console.log("Carteira conectada");
+        })
+        .catch((err) => {
+          isConnected = false;
+          console.error("Erro ao conectar carteira:", err);
+        });
     };
   </script>
 </body>
