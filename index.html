@@ -43,11 +43,15 @@
     window.onload = () => {
       const contratoAddress = "0x19776a497a8D56E70629e6082702b6A093F666Af";
       const abi = [
+        "function buyTokens(uint256 tokensDesired) payable",
+        "function estimateBuy(uint256 tokensDesired) view returns (bool, uint256)",
         "function currentLot() view returns (uint256)",
         "function tokensRemainingInLot() view returns (uint256)",
-        "function estimateBuy(uint256) view returns (bool,uint256)",
-        "function buyTokens(uint256) payable",
-        "function priceFeed() view returns (address)"
+        "function priceFeed() view returns (address)",
+        "event TokensPurchased(address indexed buyer, uint256 amount, uint256 ethPaid)",
+        "function name() view returns (string)",
+        "function symbol() view returns (string)",
+        "function decimals() view returns (uint8)"
       ];
 
       const provider = new ethers.providers.JsonRpcProvider("https://mainnet.optimism.io");
