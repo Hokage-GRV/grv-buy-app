@@ -57,6 +57,8 @@
       const provider = new ethers.providers.JsonRpcProvider("https://mainnet.optimism.io");
       const contrato = new ethers.Contract(contratoAddress, abi, provider);
 
+      let ultimoEstimadoETH = null; // Armazena valor de ETH estimado (string em formato decimal)
+
       window.estimarCompra = async function () {
         const qtd = document.getElementById('tokenAmount').value;
         if (!qtd || qtd <= 0) {
@@ -71,6 +73,7 @@
             return;
           }
           const estimadoETH = ethers.utils.formatEther(estimadoWei);
+          ultimoEstimadoETH = estimadoETH; // salva como string decimal
           document.getElementById('ethValue').value = parseFloat(estimadoETH).toFixed(6);
         } catch (err) {
           console.error("Erro ao estimar compra:", err);
@@ -85,10 +88,9 @@
         }
         try {
           const qtd = document.getElementById('tokenAmount').value;
-          const ethAmount = document.getElementById('ethValue').value;
 
-          if (!qtd || qtd <= 0 || !ethAmount || ethAmount === "Indisponível" || ethAmount === "Erro" || isNaN(ethAmount) || parseFloat(ethAmount) <= 0) {
-            alert("Preencha os dados corretamente antes de comprar.");
+          if (!qtd || qtd <= 0 || !ultimoEstimadoETH || isNaN(ultimoEstimadoETH) || parseFloat(ultimoEstimadoETH) <= 0) {
+            alert("Preencha os dados corretamente e estime antes de comprar.");
             return;
           }
 
@@ -97,16 +99,19 @@
           const signer = web3Provider.getSigner();
           const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
 
-          // Adiciona 1% de buffer ao valor
-          const buffer = parseFloat(ethAmount) * 0.01;
-          const ethTotal = (parseFloat(ethAmount) + buffer).toFixed(6);
+          // Aplica 2% de margem sobre o valor estimado (em ETH decimal string)
+          const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.02).toFixed(6);
 
-          // Prepara a transação com populateTransaction
           const txData = await contratoAssinado.populateTransaction.buyTokens(qtd, {
-            value: ethers.utils.parseEther(ethTotal)
+            value: ethers.utils.parseEther(ethTotal) // convertendo novamente para wei
           });
 
-          // Envia manualmente para MetaMask exibir igual ao Etherscan
+          txData.gasLimit = ethers.BigNumber.from("350000");
+
+          console.log("estimadoETH:", ultimoEstimadoETH);
+          console.log("ethTotal (com buffer 2%):", ethTotal);
+          console.log("txData:", txData);
+
           const tx = await signer.sendTransaction(txData);
           await tx.wait();
 
