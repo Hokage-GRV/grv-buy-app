@@ -97,10 +97,19 @@
           const signer = web3Provider.getSigner();
           const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
 
-          const tx = await contratoAssinado.buyTokens(qtd, {
-            value: ethers.utils.parseEther(ethAmount)
+          // Adiciona 1% de buffer ao valor
+          const buffer = parseFloat(ethAmount) * 0.01;
+          const ethTotal = (parseFloat(ethAmount) + buffer).toFixed(6);
+
+          // Prepara a transação com populateTransaction
+          const txData = await contratoAssinado.populateTransaction.buyTokens(qtd, {
+            value: ethers.utils.parseEther(ethTotal)
           });
+
+          // Envia manualmente para MetaMask exibir igual ao Etherscan
+          const tx = await signer.sendTransaction(txData);
           await tx.wait();
+
           alert('Compra realizada com sucesso!');
         } catch (err) {
           console.error("Erro na compra:", err);
