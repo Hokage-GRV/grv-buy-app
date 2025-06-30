@@ -51,8 +51,13 @@
     window.onload = () => {
       const contratoAddress = "0x19776a497a8D56E70629e6082702b6A093F666Af";
       const abi = [
-        "function buyTokens(uint256 tokensDesired) payable",
-        "function estimateBuy(uint256 tokensDesired) view returns (bool, uint256)"
+        {"inputs":[{"internalType":"address","name":"_owner1","type":"address"},{"internalType":"address","name":"_multisigWallet","type":"address"},{"internalType":"address","name":"_priceFeed","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
+        {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"ethPaid","type":"uint256"}],"name":"TokensPurchased","type":"event"},
+        {"inputs":[{"internalType":"uint256","name":"tokensDesired","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"payable","type":"function"},
+        {"inputs":[{"internalType":"uint256","name":"tokensDesired","type":"uint256"}],"name":"estimateBuy","outputs":[{"internalType":"bool","name":"canExecute","type":"bool"},{"internalType":"uint256","name":"estimatetotalwei","type":"uint256"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"}
       ];
 
       const provider = new ethers.providers.JsonRpcProvider("https://mainnet.optimism.io");
