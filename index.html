@@ -102,17 +102,11 @@
           // Aplica 2% de margem sobre o valor estimado (em ETH decimal string)
           const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.02).toFixed(6);
 
-          const txData = await contratoAssinado.populateTransaction.buyTokens(qtd, {
-            value: ethers.utils.parseEther(ethTotal) // convertendo novamente para wei
+          const tx = await contratoAssinado.buyTokens(qtd, {
+            value: ethers.utils.parseEther(ethTotal),
+            gasLimit: ethers.BigNumber.from("350000")
           });
 
-          txData.gasLimit = ethers.BigNumber.from("350000");
-
-          console.log("estimadoETH:", ultimoEstimadoETH);
-          console.log("ethTotal (com buffer 2%):", ethTotal);
-          console.log("txData:", txData);
-
-          const tx = await signer.sendTransaction(txData);
           await tx.wait();
 
           alert('Compra realizada com sucesso!');
@@ -127,4 +121,3 @@
   </script>
 </body>
 </html>
-
