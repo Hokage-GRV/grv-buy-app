@@ -42,8 +42,9 @@
 
   <input type="number" id="tokenAmount" placeholder="Quantidade de tokens desejados">
   <input type="text" id="ethValue" placeholder="ETH necessário (estimado)" disabled>
-  
+
   <button class="token-btn" onclick="adicionarGRV()">🦊 Adicionar GRV ao MetaMask</button>
+  <button class="token-btn" onclick="conectarContrato()">🔗 Conectar ao contrato GRV</button>
   <button onclick="estimarCompra()">Estimar Compra</button>
   <button onclick="comprar()">Buy Now</button>
 
@@ -88,6 +89,25 @@
         }
       };
 
+      window.conectarContrato = async function () {
+        try {
+          await ethereum.request({ method: 'eth_requestAccounts' });
+          carteiraConectada = true;
+
+          const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = web3Provider.getSigner();
+          const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
+
+          // chamada básica para firmar a conexão
+          const nome = await contratoAssinado.name();
+          console.log("Conectado ao contrato GRV:", nome);
+          alert("Carteira conectada ao contrato GRV com sucesso!");
+        } catch (error) {
+          console.error("Erro ao conectar com o contrato:", error);
+          alert("Erro ao conectar com o contrato GRV.");
+        }
+      };
+
       window.estimarCompra = async function () {
         const qtd = document.getElementById('tokenAmount').value;
         if (!qtd || qtd <= 0) {
@@ -112,7 +132,7 @@
 
       window.comprar = async function () {
         if (!carteiraConectada) {
-          alert("Conecte sua carteira antes de comprar (clique em 'Adicionar GRV ao MetaMask')");
+          alert("Conecte sua carteira antes de comprar (clique em 'Conectar ao contrato GRV')");
           return;
         }
         try {
