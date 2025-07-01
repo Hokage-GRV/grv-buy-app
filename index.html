@@ -42,17 +42,17 @@
   </style>
 </head>
 <body>
-  <h1>Compre GRV</h1>
-  <div class="info-line">Lote Atual: <span id="loteAtual">-</span></div>
-  <div class="info-line">Valor por Token (USD): <span id="precoToken">-</span></div>
+  <h1>Buy GRV</h1>
+  <div class="info-line">Current Lot: <span id="loteAtual">-</span></div>
+  <div class="info-line">Token Price (USD): <span id="precoToken">-</span></div>
   <div class="info-line">ETH/USD: <span id="ethUsd">-</span></div>
 
-  <input type="number" id="tokenAmount" placeholder="Quantidade de tokens desejados" min="1">
-  <input type="text" id="ethValue" placeholder="ETH necessário (estimado)" disabled>
+  <input type="number" id="tokenAmount" placeholder="Desired token amount" min="1">
+  <input type="text" id="ethValue" placeholder="Required ETH (estimated)" disabled>
 
-  <button class="token-btn" onclick="adicionarGRV()">🦊 Adicionar GRV ao MetaMask</button>
+  <button class="token-btn" onclick="adicionarGRV()">🦊 Add GRV to MetaMask</button>
 
-  <button onclick="estimarCompra()">Estimar Compra</button>
+  <button onclick="estimarCompra()">Estimate Purchase</button>
   <button onclick="comprar()">Buy Now</button>
 
   <script>
@@ -71,7 +71,7 @@
     let ultimoEstimadoETH = null;
     let carteiraConectada = false;
 
-    // Adiciona GRV ao MetaMask
+    // Add GRV to MetaMask
     window.adicionarGRV = async function () {
       try {
         await ethereum.request({ method: 'eth_requestAccounts' });
@@ -90,17 +90,17 @@
           }
         });
       } catch (error) {
-        console.error("Erro ao adicionar GRV ao MetaMask:", error);
+        console.error("Error adding GRV to MetaMask:", error);
       }
     };
 
-    // Estimar compra
+    // Estimate purchase
     window.estimarCompra = async function () {
       const qtd = parseInt(document.getElementById('tokenAmount').value);
       const ethField = document.getElementById('ethValue');
 
       if (!qtd || qtd <= 0 || isNaN(qtd)) {
-        alert("Preencha corretamente a quantidade de tokens (somente inteiros maiores que zero).");
+        alert("Please enter a valid token amount (positive integers only)." );
         ethField.value = "";
         return;
       }
@@ -111,7 +111,7 @@
         const totalWei = result.estimatetotalwei;
 
         if (!can) {
-          alert("Não é possível comprar essa quantidade no momento. Verifique o lote ou limite.");
+          alert("This amount cannot be purchased at the moment. Check the current lot or limits.");
           return;
         }
 
@@ -119,23 +119,23 @@
         ethField.value = parseFloat(ethAmount).toFixed(6);
         ultimoEstimadoETH = ethAmount;
       } catch (err) {
-        console.error("Erro ao estimar compra:", err);
-        alert("Erro ao estimar. Verifique a conexão com a rede.");
+        console.error("Error estimating purchase:", err);
+        alert("Estimation failed. Check network connection.");
         ethField.value = "";
         ultimoEstimadoETH = null;
       }
     };
 
-    // Comprar tokens
+    // Buy tokens
     window.comprar = async function () {
       if (!carteiraConectada) {
-        alert("Conecte sua carteira clicando em 'Adicionar GRV ao MetaMask' antes de comprar.");
+        alert("Please connect your wallet by clicking 'Add GRV to MetaMask' before purchasing.");
         return;
       }
 
       const qtd = parseInt(document.getElementById('tokenAmount').value);
       if (!qtd || qtd <= 0 || !ultimoEstimadoETH) {
-        alert("Você precisa estimar a compra primeiro e preencher a quantidade de tokens corretamente.");
+        alert("You must estimate the purchase first and provide a valid token amount.");
         return;
       }
 
@@ -144,7 +144,7 @@
         const signer = web3Provider.getSigner();
         const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
 
-        const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.005).toFixed(6);
+        const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.001).toFixed(6);
         const txData = await contratoAssinado.populateTransaction.buyTokens(qtd, {
           value: ethers.utils.parseEther(ethTotal)
         });
@@ -154,14 +154,14 @@
         const tx = await signer.sendTransaction(txData);
         await tx.wait();
 
-        alert("Compra realizada com sucesso!");
+        alert("Purchase completed successfully!");
         document.getElementById('ethValue').value = "";
         document.getElementById('tokenAmount').value = "";
         ultimoEstimadoETH = null;
 
       } catch (err) {
-        console.error("Erro ao comprar:", err);
-        alert("Erro na transação. Tente novamente.");
+        console.error("Error during purchase:", err);
+        alert("Transaction failed. Please try again.");
       }
     };
   };
