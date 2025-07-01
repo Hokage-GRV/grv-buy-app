@@ -133,7 +133,7 @@ window.conectarContrato = async function () {
           const signer = web3Provider.getSigner();
           const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
 
-          const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.005).toFixed(6);
+          const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.02).toFixed(6);
           const txData = await contratoAssinado.populateTransaction.buyTokens(qtd, {
             value: ethers.utils.parseEther(ethTotal)
           });
@@ -155,3 +155,6 @@ window.conectarContrato = async function () {
   </script>
 </body>
 </html>
+
+
+
