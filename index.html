@@ -7,10 +7,11 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-image: url('background.jpg');
+      font-family: 'Times New Roman', serif;
+      background-image: url('https://images.unsplash.com/photo-1637382807697-725b57f4c8f1');
       background-size: cover;
       background-position: center;
+      background-attachment: fixed;
       color: white;
       padding: 2rem;
       max-width: 600px;
@@ -18,26 +19,40 @@
     }
     input, button {
       width: 100%;
-      padding: 10px;
-      margin: 10px 0;
+      padding: 12px;
+      margin: 12px 0;
       font-size: 1rem;
+      border-radius: 12px;
+      border: 2px solid purple;
+      box-sizing: border-box;
     }
     .info-line {
       font-weight: bold;
       margin-bottom: 10px;
+      border: 2px solid purple;
+      border-radius: 12px;
+      padding: 8px;
+      background-color: rgba(0, 0, 0, 0.4);
     }
     .token-btn {
       background-color: #222;
       color: #fff;
-      border: 1px solid #555;
+      border: 2px solid purple;
+      border-radius: 12px;
       cursor: pointer;
     }
-    .alert-box {
-      background-color: #111;
-      padding: 10px;
-      border: 1px solid #666;
-      margin: 10px 0;
-      font-size: 0.95rem;
+    .token-btn:hover {
+      background-color: #333;
+    }
+    button {
+      background-color: #444;
+      color: white;
+      border: 2px solid purple;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #555;
     }
   </style>
 </head>
