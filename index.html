@@ -51,110 +51,121 @@
   <input type="text" id="ethValue" placeholder="ETH necessário (estimado)" disabled>
 
   <button class="token-btn" onclick="adicionarGRV()">🦊 Adicionar GRV ao MetaMask</button>
-  <button class="token-btn" onclick="conectarContrato()">🔗 Conectar ao contrato (Etherscan)</button>
-  <div class="alert-box">⚠️ Conecte sua carteira ao contrato no botão "Connect to Web3" na nova aba que será aberta.</div>
 
   <button onclick="estimarCompra()">Estimar Compra</button>
   <button onclick="comprar()">Buy Now</button>
 
   <script>
-    window.onload = () => {
-      const contratoAddress = "0x19776a497a8D56E70629e6082702b6A093F666Af";
-      const abi = [
-        {"inputs":[{"internalType":"address","name":"_owner1","type":"address"},{"internalType":"address","name":"_multisigWallet","type":"address"},{"internalType":"address","name":"_priceFeed","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
-        {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"ethPaid","type":"uint256"}],"name":"TokensPurchased","type":"event"},
-        {"inputs":[{"internalType":"uint256","name":"tokensDesired","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"payable","type":"function"},
-        {"inputs":[{"internalType":"uint256","name":"tokensDesired","type":"uint256"}],"name":"estimateBuy","outputs":[{"internalType":"bool","name":"canExecute","type":"bool"},{"internalType":"uint256","name":"estimatetotalwei","type":"uint256"}],"stateMutability":"view","type":"function"},
-        {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
-        {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
-        {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"}
-      ];
+  window.onload = () => {
+    const contratoAddress = "0x19776a497a8D56E70629e6082702b6A093F666Af";
+    const abi = [
+      {"inputs":[{"internalType":"address","name":"_owner1","type":"address"},{"internalType":"address","name":"_multisigWallet","type":"address"},{"internalType":"address","name":"_priceFeed","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"ethPaid","type":"uint256"}],"name":"TokensPurchased","type":"event"},
+      {"inputs":[{"internalType":"uint256","name":"tokensDesired","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"payable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"tokensDesired","type":"uint256"}],"name":"estimateBuy","outputs":[{"internalType":"bool","name":"canExecute","type":"bool"},{"internalType":"uint256","name":"estimatetotalwei","type":"uint256"}],"stateMutability":"view","type":"function"}
+    ];
 
-      const provider = new ethers.providers.JsonRpcProvider("https://mainnet.optimism.io");
-      const contrato = new ethers.Contract(contratoAddress, abi, provider);
+    const provider = new ethers.providers.JsonRpcProvider("https://mainnet.optimism.io");
+    const contrato = new ethers.Contract(contratoAddress, abi, provider);
 
-      let ultimoEstimadoETH = null;
-      let carteiraConectada = false;
+    let ultimoEstimadoETH = null;
+    let carteiraConectada = false;
 
-      window.adicionarGRV = async function () {
-        try {
-          await ethereum.request({ method: 'eth_requestAccounts' });
-          carteiraConectada = true;
+    // Adiciona GRV ao MetaMask
+    window.adicionarGRV = async function () {
+      try {
+        await ethereum.request({ method: 'eth_requestAccounts' });
+        carteiraConectada = true;
 
-          await ethereum.request({
-            method: 'wallet_watchAsset',
-            params: {
-              type: 'ERC20',
-              options: {
-                address: contratoAddress,
-                symbol: 'GRV',
-                decimals: 18,
-                image: 'https://seusite.com/logo_grv.png'
-              }
+        await ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: contratoAddress,
+              symbol: 'GRV',
+              decimals: 18,
+              image: ''
             }
-          });
-        } catch (error) {
-          console.error("Erro ao adicionar GRV ao MetaMask:", error);
-        }
-      };
+          }
+        });
+      } catch (error) {
+        console.error("Erro ao adicionar GRV ao MetaMask:", error);
+      }
+    };
 
-window.conectarContrato = async function () {
-  try {
-    await ethereum.request({ method: 'eth_requestAccounts' });
-    carteiraConectada = true;
+    // Estimar compra
+    window.estimarCompra = async function () {
+      const qtd = parseInt(document.getElementById('tokenAmount').value);
+      const ethField = document.getElementById('ethValue');
 
-    const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = web3Provider.getSigner();
-    const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
+      if (!qtd || qtd <= 0 || isNaN(qtd)) {
+        alert("Preencha corretamente a quantidade de tokens (somente inteiros maiores que zero).");
+        ethField.value = "";
+        return;
+      }
 
-    // Chamada de leitura básica só pra sinalizar conexão com o contrato
-    const nome = await contratoAssinado.name();
-    console.log("Conectado ao contrato GRV:", nome);
+      try {
+        const result = await contrato.estimateBuy(qtd);
+        const can = result.canExecute;
+        const totalWei = result.estimatetotalwei;
 
-  } catch (error) {
-    console.error("Erro ao conectar com o contrato:", error);
-    alert("Erro ao conectar com o contrato GRV.");
-  }
-};
-
-      window.comprar = async function () {
-        if (!carteiraConectada) {
-          alert("Conecte sua carteira antes de comprar (clique em 'Adicionar GRV ao MetaMask')");
+        if (!can) {
+          alert("Não é possível comprar essa quantidade no momento. Verifique o lote ou limite.");
           return;
         }
-        try {
-          const qtd = document.getElementById('tokenAmount').value;
-          if (!qtd || qtd <= 0 || !ultimoEstimadoETH || isNaN(ultimoEstimadoETH) || parseFloat(ultimoEstimadoETH) <= 0) {
-            alert("Preencha os dados corretamente e estime antes de comprar.");
-            return;
-          }
 
-          const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-          const signer = web3Provider.getSigner();
-          const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
-
-          const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.02).toFixed(6);
-          const txData = await contratoAssinado.populateTransaction.buyTokens(qtd, {
-            value: ethers.utils.parseEther(ethTotal)
-          });
-
-          txData.gasLimit = ethers.BigNumber.from("350000");
-
-          const tx = await signer.sendTransaction(txData);
-          await tx.wait();
-
-          alert('Compra realizada com sucesso!');
-        } catch (err) {
-          console.error("Erro na compra:", err);
-          alert("Erro ao realizar transação. Verifique sua carteira.\n\n" + (err?.message || err));
-          document.getElementById('ethValue').value = "";
-          document.getElementById('tokenAmount').value = "";
-        }
-      };
+        const ethAmount = ethers.utils.formatEther(totalWei);
+        ethField.value = parseFloat(ethAmount).toFixed(6);
+        ultimoEstimadoETH = ethAmount;
+      } catch (err) {
+        console.error("Erro ao estimar compra:", err);
+        alert("Erro ao estimar. Verifique a conexão com a rede.");
+        ethField.value = "";
+        ultimoEstimadoETH = null;
+      }
     };
+
+    // Comprar tokens
+    window.comprar = async function () {
+      if (!carteiraConectada) {
+        alert("Conecte sua carteira clicando em 'Adicionar GRV ao MetaMask' antes de comprar.");
+        return;
+      }
+
+      const qtd = parseInt(document.getElementById('tokenAmount').value);
+      if (!qtd || qtd <= 0 || !ultimoEstimadoETH) {
+        alert("Você precisa estimar a compra primeiro e preencher a quantidade de tokens corretamente.");
+        return;
+      }
+
+      try {
+        const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = web3Provider.getSigner();
+        const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
+
+        const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.02).toFixed(6);
+        const txData = await contratoAssinado.populateTransaction.buyTokens(qtd, {
+          value: ethers.utils.parseEther(ethTotal)
+        });
+
+        txData.gasLimit = ethers.BigNumber.from("350000");
+
+        const tx = await signer.sendTransaction(txData);
+        await tx.wait();
+
+        alert("Compra realizada com sucesso!");
+        document.getElementById('ethValue').value = "";
+        document.getElementById('tokenAmount').value = "";
+        ultimoEstimadoETH = null;
+
+      } catch (err) {
+        console.error("Erro ao comprar:", err);
+        alert("Erro na transação. Tente novamente.");
+      }
+    };
+  };
   </script>
+
 </body>
 </html>
-
-
-
