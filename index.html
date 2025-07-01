@@ -77,7 +77,10 @@
       {"inputs":[{"internalType":"address","name":"_owner1","type":"address"},{"internalType":"address","name":"_multisigWallet","type":"address"},{"internalType":"address","name":"_priceFeed","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
       {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"ethPaid","type":"uint256"}],"name":"TokensPurchased","type":"event"},
       {"inputs":[{"internalType":"uint256","name":"tokensDesired","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"payable","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"tokensDesired","type":"uint256"}],"name":"estimateBuy","outputs":[{"internalType":"bool","name":"canExecute","type":"bool"},{"internalType":"uint256","name":"estimatetotalwei","type":"uint256"}],"stateMutability":"view","type":"function"}
+      {"inputs":[{"internalType":"uint256","name":"tokensDesired","type":"uint256"}],"name":"estimateBuy","outputs":[{"internalType":"bool","name":"canExecute","type":"bool"},{"internalType":"uint256","name":"estimatetotalwei","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"currentLot","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"tokenPriceUSD","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"getLatestETHPrice","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}
     ];
 
     const provider = new ethers.providers.JsonRpcProvider("https://mainnet.optimism.io");
@@ -86,7 +89,22 @@
     let ultimoEstimadoETH = null;
     let carteiraConectada = false;
 
-    // Add GRV to MetaMask
+    async function atualizarInfosTopo() {
+      try {
+        const lote = await contrato.currentLot();
+        const preco = await contrato.tokenPriceUSD();
+        const ethUsd = await contrato.getLatestETHPrice();
+
+        document.getElementById("loteAtual").textContent = lote.toString();
+        document.getElementById("precoToken").textContent = (Number(preco) / 1e6).toFixed(4);
+        document.getElementById("ethUsd").textContent = (Number(ethUsd) / 1e8).toFixed(2);
+      } catch (err) {
+        console.error("Erro ao atualizar infos do topo:", err);
+      }
+    }
+
+    atualizarInfosTopo();
+
     window.adicionarGRV = async function () {
       try {
         await ethereum.request({ method: 'eth_requestAccounts' });
@@ -109,7 +127,6 @@
       }
     };
 
-    // Estimate purchase
     window.estimarCompra = async function () {
       const qtd = parseInt(document.getElementById('tokenAmount').value);
       const ethField = document.getElementById('ethValue');
@@ -141,7 +158,6 @@
       }
     };
 
-    // Buy tokens
     window.comprar = async function () {
       if (!carteiraConectada) {
         alert("Please connect your wallet by clicking 'Add GRV to MetaMask' before purchasing.");
