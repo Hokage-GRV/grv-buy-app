@@ -47,7 +47,7 @@
   <div class="info-line">Valor por Token (USD): <span id="precoToken">-</span></div>
   <div class="info-line">ETH/USD: <span id="ethUsd">-</span></div>
 
-  <input type="number" id="tokenAmount" placeholder="Quantidade de tokens desejados">
+  <input type="number" id="tokenAmount" placeholder="Quantidade de tokens desejados" min="1">
   <input type="text" id="ethValue" placeholder="ETH necessário (estimado)" disabled>
 
   <button class="token-btn" onclick="adicionarGRV()">🦊 Adicionar GRV ao MetaMask</button>
@@ -144,7 +144,7 @@
         const signer = web3Provider.getSigner();
         const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
 
-        const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.02).toFixed(6);
+        const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.005).toFixed(6);
         const txData = await contratoAssinado.populateTransaction.buyTokens(qtd, {
           value: ethers.utils.parseEther(ethTotal)
         });
