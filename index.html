@@ -32,6 +32,13 @@
       border: 1px solid #555;
       cursor: pointer;
     }
+    .alert-box {
+      background-color: #111;
+      padding: 10px;
+      border: 1px solid #666;
+      margin: 10px 0;
+      font-size: 0.95rem;
+    }
   </style>
 </head>
 <body>
@@ -44,7 +51,9 @@
   <input type="text" id="ethValue" placeholder="ETH necessário (estimado)" disabled>
 
   <button class="token-btn" onclick="adicionarGRV()">🦊 Adicionar GRV ao MetaMask</button>
-  <button class="token-btn" onclick="conectarContrato()">🔗 Conectar ao contrato GRV</button>
+  <button class="token-btn" onclick="conectarContrato()">🔗 Conectar ao contrato (Etherscan)</button>
+  <div class="alert-box">⚠️ Conecte sua carteira ao contrato no botão "Connect to Web3" na nova aba que será aberta.</div>
+
   <button onclick="estimarCompra()">Estimar Compra</button>
   <button onclick="comprar()">Buy Now</button>
 
@@ -89,23 +98,9 @@
         }
       };
 
-      window.conectarContrato = async function () {
-        try {
-          await ethereum.request({ method: 'eth_requestAccounts' });
-          carteiraConectada = true;
-
-          const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-          const signer = web3Provider.getSigner();
-          const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
-
-          // chamada básica para firmar a conexão
-          const nome = await contratoAssinado.name();
-          console.log("Conectado ao contrato GRV:", nome);
-          alert("Carteira conectada ao contrato GRV com sucesso!");
-        } catch (error) {
-          console.error("Erro ao conectar com o contrato:", error);
-          alert("Erro ao conectar com o contrato GRV.");
-        }
+      window.conectarContrato = function () {
+        const link = `https://optimistic.etherscan.io/address/${contratoAddress}#writeContract`;
+        window.open(link, '_blank');
       };
 
       window.estimarCompra = async function () {
@@ -132,7 +127,7 @@
 
       window.comprar = async function () {
         if (!carteiraConectada) {
-          alert("Conecte sua carteira antes de comprar (clique em 'Conectar ao contrato GRV')");
+          alert("Conecte sua carteira antes de comprar (clique em 'Adicionar GRV ao MetaMask')");
           return;
         }
         try {
