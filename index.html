@@ -98,32 +98,24 @@
         }
       };
 
-      window.conectarContrato = function () {
-        const link = `https://optimistic.etherscan.io/address/0x19776a497a8D56E70629e6082702b6A093F666Af#writeContract`;
-        window.open(link, '_blank');
-      };
+window.conectarContrato = async function () {
+  try {
+    await ethereum.request({ method: 'eth_requestAccounts' });
+    carteiraConectada = true;
 
-      window.estimarCompra = async function () {
-        const qtd = document.getElementById('tokenAmount').value;
-        if (!qtd || qtd <= 0) {
-          alert("Insira uma quantidade válida de tokens");
-          document.getElementById('ethValue').value = "";
-          return;
-        }
-        try {
-          const [canExecute, estimadoWei] = await contrato.estimateBuy(qtd);
-          if (!canExecute) {
-            document.getElementById('ethValue').value = "Indisponível";
-            return;
-          }
-          const estimadoETH = ethers.utils.formatEther(estimadoWei);
-          ultimoEstimadoETH = estimadoETH;
-          document.getElementById('ethValue').value = parseFloat(estimadoETH).toFixed(6);
-        } catch (err) {
-          console.error("Erro ao estimar compra:", err);
-          document.getElementById('ethValue').value = "Erro";
-        }
-      };
+    const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = web3Provider.getSigner();
+    const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
+
+    // Chamada de leitura básica só pra sinalizar conexão com o contrato
+    const nome = await contratoAssinado.name();
+    console.log("Conectado ao contrato GRV:", nome);
+
+  } catch (error) {
+    console.error("Erro ao conectar com o contrato:", error);
+    alert("Erro ao conectar com o contrato GRV.");
+  }
+};
 
       window.comprar = async function () {
         if (!carteiraConectada) {
@@ -141,7 +133,7 @@
           const signer = web3Provider.getSigner();
           const contratoAssinado = new ethers.Contract(contratoAddress, abi, signer);
 
-          const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.02).toFixed(6);
+          const ethTotal = (parseFloat(ultimoEstimadoETH) * 1.005).toFixed(6);
           const txData = await contratoAssinado.populateTransaction.buyTokens(qtd, {
             value: ethers.utils.parseEther(ethTotal)
           });
