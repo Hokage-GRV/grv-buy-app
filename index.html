@@ -58,9 +58,6 @@
 </head>
 <body>
   <h1>Buy GRV</h1>
-  <div class="info-line">Current Lot: <span id="loteAtual">-</span></div>
-  <div class="info-line">Token Price (USD): <span id="precoToken">-</span></div>
-  <div class="info-line">ETH/USD: <span id="ethUsd">-</span></div>
 
   <input type="number" id="tokenAmount" placeholder="Desired token amount" min="1">
   <input type="text" id="ethValue" placeholder="Required ETH (estimated)" disabled>
@@ -88,22 +85,6 @@
 
     let ultimoEstimadoETH = null;
     let carteiraConectada = false;
-
-    async function atualizarInfosTopo() {
-      try {
-        const lote = await contrato.currentLot();
-        const preco = await contrato.tokenPriceUSD();
-        const ethUsd = await contrato.getLatestETHPrice();
-
-        document.getElementById("loteAtual").textContent = lote.toString();
-        document.getElementById("precoToken").textContent = (Number(preco) / 1e6).toFixed(4);
-        document.getElementById("ethUsd").textContent = (Number(ethUsd) / 1e8).toFixed(2);
-      } catch (err) {
-        console.error("Erro ao atualizar infos do topo:", err);
-      }
-    }
-
-    atualizarInfosTopo();
 
     window.adicionarGRV = async function () {
       try {
